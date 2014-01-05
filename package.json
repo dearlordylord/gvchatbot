@@ -1,0 +1,16 @@
+{
+  "name": "botville",
+  "version": "0.0.0",
+  "description": "Botville bot for botting",
+  "main": "botville.js",
+  "dependencies": {
+    "moment": "~2.5.0",
+    "underscore": "~1.5.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Firfi",
+  "license": "BSD-2-Clause"
+}

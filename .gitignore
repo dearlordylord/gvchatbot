@@ -1,0 +1,5 @@
+node_modules
+logs
+*.png
+cookies*.txt
+config.json
