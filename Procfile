@@ -1,1 +1,1 @@
-web: phantomjs --cookies-file=cookies.txt botville.js
+worker: phantomjs --cookies-file=cookies.txt botville.js
