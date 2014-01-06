@@ -1,6 +1,6 @@
 'use strict';
 
-var config = require('./config.json');
+
 var page = require('webpage').create();
 var news = require('webpage').create();
 
@@ -11,6 +11,12 @@ var moment = require('moment');
 var _ = require('underscore');
 
 var fs = require('fs');
+
+var config = function() {
+  if (fs.exists('./config.json')) {
+    return require('./config.json');
+  } else return false;
+}();
 
 var acc = function() {
   if (config) {
