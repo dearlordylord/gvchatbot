@@ -64,49 +64,19 @@ function initAccount(account) {
       else log(msg);
     };
 
-    var scope = {
-      game: []
-    };
-
     page.onUrlChanged = function(url) {
-      if (url == 'http://godville.net/news') {
+      if (url == 'http://godville.net/news') { // sometimes redirecting with (possibly) reason that news is changed, but not everytime!
         page.onLoadFinished = function() {
-          page.render('example_news.png');
-          scope.game = page.evaluate(evaluateGame);
           page.evaluate(function() {
             document.location = 'http://godville.net/superhero';
           });
         };
       } else {
         page.onLoadFinished = function() {
-          initHeroBot(scope);
+          initHeroBot();
         };
       }
     };
-
-
-    function getGame(cb) {
-      news.open('http://godville.net/news', function() {
-        news.onConsoleMessage = function (msg){
-          log(msg);
-        };
-        news.onError = function (msg, trace) {
-          if (msg.indexOf('Viewport argument value') !== -1) return;
-          console.log(msg);
-          trace.forEach(function(item) {
-            console.log('  ', item.file, ':', item.line);
-          })
-        };
-        scope.game = news.evaluate(evaluateGame);
-        cb(scope);
-      });
-    }
-    function evaluateGame() {
-      var game = $('.game h2').filter(function(i, e) {return $(e).text() == 'Разыскиваются'}).parent().find('a').map(function(i, e){return e.innerHTML}).toArray();
-      game.push.apply(game, ['Андед-Мороз', 'Сатан-Клаус']);
-      console.log('Daily game changed: ' + game);
-      return game;
-    }
 
     if (page.url == 'http://godville.net/login') {
       page.render('example_login.png');
@@ -119,15 +89,38 @@ function initAccount(account) {
         password: p
       });
     } else {
-      getGame(initHeroBot);
+      initHeroBot();
     }
 
 
-    function initHeroBot(scope) {
+    function initHeroBot() {
       page.render('example.png');
       log('initializing hero bot...');
       page.injectJs('node_modules/underscore/underscore.js');
-      page.evaluate(function(sc) {
+      page.injectJs('node_modules/moment/moment.js');
+      page.evaluate(function() {
+
+        var game = [];
+
+        function getGame() {
+          $.get('news', function(r) {
+            var g = $(r).find('.game h2').filter(function(i, e) {return $(e).text() == 'Разыскиваются'}).parent().find('a').map(function(i, e){return e.innerHTML}).toArray();
+            g.push.apply(g, ['Андед-Мороз', 'Сатан-Клаус']);
+            if (g[0] !== game[0]) {
+              game = g;
+              console.log('Daily game changed: ' + game);
+            }
+          });
+
+        }
+
+        // game = дичь; game of thrones use it, so why not
+        (function scheduleGetGame() {
+          // check every (hour+2minutes) for new game in news
+          var nextRun = moment().startOf('hour').add(1, 'h').add(2, 'm').diff(moment());
+          setTimeout(scheduleGetGame, nextRun);
+          getGame();
+        })();
 
         var lastNews = '';
         var lastLog = [];
@@ -142,6 +135,7 @@ function initAccount(account) {
         var lastYell = 0;
         var bricks = 0;
         var interHandler = setInterval(init, 5000);
+
         function init() {
           if (document.URL !== 'http://godville.net/superhero') {
             console.log('url changed, restarting bot');
@@ -368,7 +362,7 @@ function initAccount(account) {
           var monsterHp = checkMonsterHp();
 
           var isGameMonster = (function() {
-            if (sc.game.indexOf(monsterName) !== -1) return true;
+            if (game.indexOf(monsterName) !== -1) return true;
             if (monsterName) {
               var titles = ['Кирпичный', 'Зажиточный', 'Врачующий', 'Латающий', 'Смертоносный', 'Сюжетный'];
               for (var i = 0; i < titles.length; i++) {
@@ -475,7 +469,7 @@ function initAccount(account) {
           }
           // make bricks of stone
         }
-      }, scope);
+      });
       log('started');
     }
   });
