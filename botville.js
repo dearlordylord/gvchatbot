@@ -4,15 +4,26 @@ var config = require('./config.json');
 var page = require('webpage').create();
 var news = require('webpage').create();
 
-var args = require('system').args;
+var system = require('system');
+var args = system.args;
+var env = system.env;
 var moment = require('moment');
 var _ = require('underscore');
 
 var fs = require('fs');
 
-var acc = _.find(config.accounts, function(a) {
-  return a.id == args[1];
-});
+var acc = function() {
+  if (config) {
+    return _.find(config.accounts, function(a) {
+      return a.id == args[1];
+    });
+  } else { // heroku deploy
+    return {
+      login: env['LOGIN'],
+      password: env['PASSWORD']
+    }
+  }
+}();
 
 if (acc) {
   initAccount(acc);
@@ -120,8 +131,9 @@ function initAccount(account) {
 
         var lastNews = '';
         var lastLog = [];
+        var isFirstRun = true;
 
-        var SECONDS_BETWEEN_YELLS = 80;
+        var SECONDS_BETWEEN_YELLS = 180;
         var getRandom = function(items) {return items[Math.floor(Math.random()*items.length)]};
         var digWords = {verbs: ['копай', 'ищи'],  nouns: ['клад', 'золото']};
         var questWords = {verbs: ['выполняй быстрее', 'делай скорее', 'выполняй скорее', 'делай быстрее'],  nouns: ['задание', 'квест']};
@@ -141,21 +153,21 @@ function initAccount(account) {
 
           var ln = newsElement.innerHTML;
           var ll = diaryElements.map(
-            function(i, e) {return {time: $(e).find('.d_time').text(), msg: $(e).find('.d_msg').text()}}
+            function(i, e) {return {time: $(e).find('.d_time').text(), msg: $(e).find('.d_msg').text(), isInf: !!$(e).find('.d_msg .m_infl').length}}
           );
-          if (!$('#m_fight_log').length && lastNews === ln && _.isEqual(lastLog, ll)) return;
           var newInLog = [];
           _.find(ll, function(o) {
             if (_.isEqual(o, lastLog[0])) return true;
             newInLog.push(o);
             return false;
           });
-          lastNews = ln;
-          lastLog = ll;
-
           newInLog.reverse().forEach(function(e) {
             console.log('_JOURNAL_'+ e.time + ' - ' + e.msg);
           });
+          if (!$('#m_fight_log').length && lastNews === ln && _.isEqual(lastLog, _.select(ll, function(m) {return !m.isInf}))) return;
+          lastNews = ln;
+          lastLog = ll;
+          if (isFirstRun) {isFirstRun = false; return;}
 
           var now = Math.round(new Date().getTime() / 1000);
           var gold, prana, charges, fatItems, hp, bossHp, absHp, absBossHp;
@@ -195,8 +207,7 @@ function initAccount(account) {
             // По старой привычке отдаёт чай «Хана» бесплатно...
             var n = news.toLowerCase();
             return n.match(/\d.*монет/) ||
-              (n.indexOf('торговец') !== -1) ||
-              (n.indexOf('торговц') !== -1) ||
+              (n.indexOf('торгов') !== -1) ||
               (n.indexOf('бесплатно') !== -1);
 
           })();
@@ -212,7 +223,7 @@ function initAccount(account) {
           var doDeed = function(isGood, reason) {
             if (!isGood) isGood = false; // just reminder
             var influence = isGood ? 'Heal' : 'Lightning';
-            console.log("Gold: " + gold + ", Prana: " + prana + " ; Send " + influence + "!");
+            console.log("Gold: " + gold + ", Prana: " + prana + ", hp: " + hp + " ; Send " + influence + "!");
             if (reason) log('Reason: ' + reason);
             isGood ? $('.enc_link').click() : $('.pun_link').click();
             setTimeout(function() {
@@ -268,7 +279,7 @@ function initAccount(account) {
             return getFatItem('бесценный дар');
           };
           var getCoolThings = function() {
-            var ct = ['комплект еловых иголок (@)', 'мешок Сатан-Клауса (@)', 'бутыль шампанского (@)', 'антифризовую сосульку (@)', 'разрывной фейерверк (@)', 'тазик оливье (@)',
+            var ct = ['комплект еловых иголок (@)', 'мешок Сатан-Клауса (@)', 'бутыль шампанского (@)', 'антифризовую сосульку (@)', 'разрывной фейерверк (@)', 'тазик оливье (@)', 'кулёк конфетти (@)',
               'волшебную лампу паладина (@)', 'коробок с вопросиком (@)', 'коробочку с надписью «Не открывать!» (@)', 'сундук мертвеца (@)', 'чёрный ящик (@)', 'чёрный-чёрный ящик (@)', 'ящик пандоры (@)', 'чудо в перьях (@)',
               'слезинку бога в янтаре (@)', 'усилитель божественной воли (@)', // accs
               'бездвоздмездный подарок (@)', 'коробок с ленточкой (@)', 'новогоднее обращение Администратора Годвилля (@)', 'подарок судьбы (@)', 'подарочный сертификат (@)', 'юбилейный золотой (@)',
@@ -387,7 +398,7 @@ function initAccount(account) {
               getCoolThings().use();
             } else if (isMeltable) { // melt gold
               console.log(lastNews);
-              if (getBomb()) getBomb().use();
+              //if (getBomb()) getBomb().use(); it's better to sell bombs
               if (prana >= 25) {
                 doEvil();
               } else {
@@ -424,6 +435,7 @@ function initAccount(account) {
               getHeal().use();
             }
           } else {
+            page.render('boss.png');
             // TODO should we interact at all?
             var titles = $($('#o_info .line')[6]).find('.l_val').text().toLowerCase();
             var reason = titles + ' boss';
