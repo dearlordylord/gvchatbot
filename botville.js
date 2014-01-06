@@ -28,11 +28,19 @@ function initAccount(account) {
   var p = account.password;
   var name = require('./lib/transliterate.js')(l);
 
-  function log(msg) {
+  function log(msg, isJournal) {
     try {
       var heroMsg = '[' + moment().format() + '] ' + msg;
-      console.log(l + ': ' + heroMsg);
-      fs.write('./logs/' + name, heroMsg, 'w');
+      if (!isJournal) {
+        console.log(l + ': ' + heroMsg);
+        fs.write('./logs/' + name + '.log', '\n', 'a');
+        fs.write('./logs/' + name + '.log', heroMsg, 'a');
+      } else {
+        fs.write('./logs/' + name + '_journal.log', '\n', 'a');
+        fs.write('./logs/' + name + '_journal.log', heroMsg, 'a');
+      }
+
+
     } catch(e) {
       console.log(e);
     }
@@ -41,7 +49,8 @@ function initAccount(account) {
   page.open('http://godville.net/superhero', function() {
 
     page.onConsoleMessage = function(msg) {
-      log(msg);
+      if (msg.indexOf('_JOURNAL_') === 0) log(msg.slice('_JOURNAL_'.length, msg.length), true);
+      else log(msg);
     };
 
     var scope = {
@@ -103,14 +112,16 @@ function initAccount(account) {
     }
 
 
-
-
     function initHeroBot(scope) {
       page.render('example.png');
       log('initializing hero bot...');
+      page.injectJs('node_modules/underscore/underscore.js');
       page.evaluate(function(sc) {
 
-        var SECONDS_BETWEEN_YELLS = 40;
+        var lastNews = '';
+        var lastLog = [];
+
+        var SECONDS_BETWEEN_YELLS = 80;
         var getRandom = function(items) {return items[Math.floor(Math.random()*items.length)]};
         var digWords = {verbs: ['копай', 'ищи'],  nouns: ['клад', 'золото']};
         var questWords = {verbs: ['выполняй быстрее', 'делай скорее', 'выполняй скорее', 'делай быстрее'],  nouns: ['задание', 'квест']};
@@ -124,8 +135,30 @@ function initAccount(account) {
             console.log('url changed, restarting bot');
             clearInterval(interHandler); return;
           }
+
+          var newsElement = document.querySelectorAll('.f_news')[0] || {innerHTML: ''};
+          var diaryElements = $('#diary .d_content .line');
+
+          var ln = newsElement.innerHTML;
+          var ll = diaryElements.map(
+            function(i, e) {return {time: $(e).find('.d_time').text(), msg: $(e).find('.d_msg').text()}}
+          );
+          if (!$('#m_fight_log').length && lastNews === ln && _.isEqual(lastLog, ll)) return;
+          var newInLog = [];
+          _.find(ll, function(o) {
+            if (_.isEqual(o, lastLog[0])) return true;
+            newInLog.push(o);
+            return false;
+          });
+          lastNews = ln;
+          lastLog = ll;
+
+          newInLog.reverse().forEach(function(e) {
+            console.log('_JOURNAL_'+ e.time + ' - ' + e.msg);
+          });
+
           var now = Math.round(new Date().getTime() / 1000);
-          var gold, prana, charges, fatItems, hp, bossHp;
+          var gold, prana, charges, fatItems, hp, bossHp, absHp, absBossHp;
 
           /*
 
@@ -143,8 +176,12 @@ function initAccount(account) {
               console.log('Got bricks: ' + (b - bricks));
             }
             bricks = b;
-            hp = 100 * eval($('#hk_health .l_val').text());
-            bossHp = 100*eval($('#o_hl1 .l_val').text());
+            var h = $('#hk_health .l_val').text();
+            hp = 100 * eval(h);
+            absHp = parseInt(h);
+            var bh = $('#o_hl1 .l_val').text();
+            bossHp = 100*eval(bh);
+            absBossHp = parseInt(bh);
           };
           getState();
 
@@ -172,10 +209,11 @@ function initAccount(account) {
             return false;
           })();
 
-          var doDeed = function(isGood) {
+          var doDeed = function(isGood, reason) {
             if (!isGood) isGood = false; // just reminder
             var influence = isGood ? 'Heal' : 'Lightning';
             console.log("Gold: " + gold + ", Prana: " + prana + " ; Send " + influence + "!");
+            if (reason) log('Reason: ' + reason);
             isGood ? $('.enc_link').click() : $('.pun_link').click();
             setTimeout(function() {
               getState();
@@ -184,10 +222,10 @@ function initAccount(account) {
               }, 100);
             }, 2000);
           };
-          var doEvil = function() {doDeed(false)};
-          var doGood = function() {doDeed(true)};
+          var doEvil = function(reason) {doDeed(false, reason)};
+          var doGood = function(reason) {doDeed(true, reason)};
           var recharge = function() {
-            if (charges < 189) return; // TODO safety
+            if (charges < 170) return; // TODO safety
             console.log("Charges: " + charges + ", Prana: " + prana + " ; Recharging!");
             $('.dch_link').click();
             setTimeout(function() {
@@ -230,7 +268,7 @@ function initAccount(account) {
             return getFatItem('бесценный дар');
           };
           var getCoolThings = function() {
-            var ct = ['комплект еловых иголок (@)', 'мешок Сатан-Клауса (@)', 'бутыль шампанского (@)', 'антифризовую сосульку (@)', 'разрывной фейерверк (@)',
+            var ct = ['комплект еловых иголок (@)', 'мешок Сатан-Клауса (@)', 'бутыль шампанского (@)', 'антифризовую сосульку (@)', 'разрывной фейерверк (@)', 'тазик оливье (@)',
               'волшебную лампу паладина (@)', 'коробок с вопросиком (@)', 'коробочку с надписью «Не открывать!» (@)', 'сундук мертвеца (@)', 'чёрный ящик (@)', 'чёрный-чёрный ящик (@)', 'ящик пандоры (@)', 'чудо в перьях (@)',
               'слезинку бога в янтаре (@)', 'усилитель божественной воли (@)', // accs
               'бездвоздмездный подарок (@)', 'коробок с ленточкой (@)', 'новогоднее обращение Администратора Годвилля (@)', 'подарок судьбы (@)', 'подарочный сертификат (@)', 'юбилейный золотой (@)',
@@ -263,6 +301,7 @@ function initAccount(account) {
 
 
           var voice = function(text) {
+            console.log('sending voice: ' + text);
             $('#god_phrase').val(text);
             $('#voice_submit').click();
             lastYell = now;
@@ -301,7 +340,7 @@ function initAccount(account) {
           };
 
           var checkIsFight = function() {
-            return $('.monster_pb').parent().css('display') != 'none'
+            return $('.monster_pb').parent().css('display') != 'none';
           };
           var isFight = checkIsFight();
 
@@ -347,18 +386,27 @@ function initAccount(account) {
             } else if (getCoolThings()) {
               getCoolThings().use();
             } else if (isMeltable) { // melt gold
+              console.log(lastNews);
               if (getBomb()) getBomb().use();
               if (prana >= 25) {
                 doEvil();
               } else {
                 recharge();
               }
-            } else if (isFight && isGameMonster && monsterHp > 20) {
+            } else if (isFight && isGameMonster && monsterHp > hp) {
               console.log('Found game monster: ' + monsterName);
-              if (prana >= 25) {
-                doEvil();
+              if (hp <= 10) {
+                if (prana >= 25) {
+                  doGood();
+                } else {
+                  recharge();
+                }
               } else {
-                recharge();
+                if (prana >= 25) {
+                  doEvil();
+                } else {
+                  recharge();
+                }
               }
             }
             else if (!isFight && !isInTown && getBossItem()) {
@@ -367,7 +415,7 @@ function initAccount(account) {
               } else {
                 recharge();
               }
-            } else if (prana >= 55 && !isFight && !isInTown && hp >= 50 &&  // hp is percent
+            } else if (prana >= 80 && !isFight && !isInTown && hp >= 50 &&  // hp is percent
               (lastYell + SECONDS_BETWEEN_YELLS < now) && !foundBoss && charges >= 2) {
               digYell();
             } else if (prana >= 80 && !isInTown && hp < 20) {
@@ -377,15 +425,41 @@ function initAccount(account) {
             }
           } else {
             // TODO should we interact at all?
-            var titles = $($('#o_info .line')[6]).find('.l_val').text();
+            var titles = $($('#o_info .line')[6]).find('.l_val').text().toLowerCase();
+            var reason = titles + ' boss';
+            var deaf = (titles.indexOf('глушащий') !== -1);
+            var parasite = (titles.indexOf('паразитирующий') !== -1);
+            var dangerous = (titles.indexOf('мощный') !== -1 ? 1 : 0) + (titles.indexOf('бойкий') !== -1 ? 1 : 0);
+            var mirror = (titles.indexOf('лучезарный') !== -1) || (titles.indexOf('неверующий') !== -1);
             // <div id="alls" class="block"><div class="block_h"><span class="l_slot"> <span class="b_handle m_hover" style="display: none;" title="Переместить блок">●</span> </span><div class="block_title">Союзники</div><span class="r_slot"><span class="h_min m_hover" style="display: none;">↑</span></span></div><div class="block_content"><div><div><div class="line"><div class="opp_n">Смашор</div><div class="opp_dropdown fb_round_badge popover-button">▼</div><div class="opp_h">61 / 336</div></div><div class="line"><div class="opp_n">Hanzel</div><div class="opp_dropdown fb_round_badge popover-button">▼</div><div class="opp_h">48 / 136</div></div><div class="line"><div class="opp_n">Скарога</div><div class="opp_dropdown fb_round_badge popover-button">▼</div><div class="opp_h">повержен</div></div></div></div><div class="line"></div></div></div>
-            if (hp < 50) {
-              if (prana >= 25) {
-                doGood();
-              } else {
-                recharge();
+
+            var allies = $('#alls').find('.line .opp_n').parent();
+            var aliveAllies = allies.find('div:contains(/)').length;
+
+            if (aliveAllies) {
+              if (hp < 50) {
+                if (prana >= 25) {
+                  doGood(reason + ' allies: ' + aliveAllies.length);
+                } else {
+                  recharge();
+                }
+              }
+            } else {
+              if (hp < 30 || (hp < 50 && !parasite)) {
+                if (prana >= 25) {
+                  doGood(reason);
+                } else {
+                  recharge();
+                }
+              } else if (!mirror) {
+                if (prana >= 25) {
+                  doEvil(reason);
+                } else {
+                  recharge();
+                }
               }
             }
+
           }
           // make bricks of stone
         }
