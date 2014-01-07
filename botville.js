@@ -135,6 +135,7 @@ function initAccount(account) {
         var SECONDS_BETWEEN_YELLS = 180;
         var getRandom = function(items) {return items[Math.floor(Math.random()*items.length)]};
         var digWords = {verbs: ['копай', 'ищи'],  nouns: ['клад', 'золото']};
+        var cancelQuestWords = {verbs: ['отмени', 'брось'],  nouns: ['квест', 'задание']};
         var questWords = {verbs: ['выполняй быстрее', 'делай скорее', 'выполняй скорее', 'делай быстрее'],  nouns: ['задание', 'квест']};
         var violateWords = ['шакал', 'червь', 'ничтожество', 'нехороший человек', 'свинья'];
 
@@ -342,6 +343,10 @@ function initAccount(account) {
             voice(yell(digWords));
           };
 
+          var cancelQuestYell = function() {
+            voice(yell(cancelQuestWords));
+          };
+
           var questYell = function() {
             voice(yell(questWords));
           };
@@ -382,6 +387,8 @@ function initAccount(account) {
           var isInTown = $('#hk_distance .l_capt').text() == 'Город';
 
           var isMeltable = !isTrade && !isFight && gold >= 3000;
+
+          var shitQuest = $('.q_name').text().match(/стать \d.*членом гильдии/);
 
           var resurrectLink = $('#cntrl1').children().last();
 
@@ -426,6 +433,8 @@ function initAccount(account) {
               } else {
                 recharge();
               }
+            } else if (shitQuest && prana >= 5 && !isFight &&  (lastYell + SECONDS_BETWEEN_YELLS < now)) {
+              cancelQuestYell();
             } else if (prana >= 80 && !isFight && !isInTown && hp >= 50 &&  // hp is percent
               (lastYell + SECONDS_BETWEEN_YELLS < now) && !foundBoss && charges >= 2) {
               digYell();
