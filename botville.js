@@ -388,7 +388,7 @@ function initAccount(account) {
 
           var isMeltable = !isTrade && !isFight && gold >= 3000;
 
-          var shitQuest = $('.q_name').text().match(/стать \d.*членом гильдии/);
+          var shitQuest = $('.q_name').text().match(/стать \d.*членом гильдии/) && !$('.q_name').text().match(/\(отменено\)/);
 
           var resurrectLink = $('#cntrl1').children().last();
 
