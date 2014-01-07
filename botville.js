@@ -236,7 +236,7 @@ function initAccount(account) {
           var doEvil = function(reason) {doDeed(false, reason)};
           var doGood = function(reason) {doDeed(true, reason)};
           var recharge = function() {
-            if (charges < 170) return; // TODO safety
+            if (charges < 150) return; // TODO safety
             console.log("Charges: " + charges + ", Prana: " + prana + " ; Recharging!");
             $('.dch_link').click();
             setTimeout(function() {
@@ -370,7 +370,7 @@ function initAccount(account) {
           var isGameMonster = (function() {
             if (game.indexOf(monsterName) !== -1) return true;
             if (monsterName) {
-              var titles = ['Кирпичный', 'Зажиточный', 'Врачующий', 'Латающий', 'Смертоносный', 'Сюжетный'];
+              var titles = ['Кирпичный', 'Зажиточный', 'Врачующий', 'Латающий', 'Смертоносный', 'Сюжетный', 'Дарующий'];
               for (var i = 0; i < titles.length; i++) {
                 var title = titles[i];
                 if (monsterName.indexOf(title) === 0) return true;
