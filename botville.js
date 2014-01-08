@@ -466,12 +466,12 @@ function initAccount(account) {
                   doGood(reason + ' allies: ' + aliveAllies);
                 }
               }
-            } else {
-              if (hp < 30 || (hp < 50 && !parasite)) {
+            } else if (!aliveAllies) {
+              if (myTurn && (hp < 30 || (hp < 50 && !parasite))) {
                 if (prana >= 25) {
                   doGood(reason);
                 }
-              } else if (!mirror) {
+              } else if (!mirror && bossTurn) {
                 if (prana >= 25) {
                   doEvil(reason);
                 }
