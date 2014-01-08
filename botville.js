@@ -470,14 +470,10 @@ function initAccount(account) {
               if (hp < 30 || (hp < 50 && !parasite)) {
                 if (prana >= 25) {
                   doGood(reason);
-                } else {
-                  recharge();
                 }
               } else if (!mirror) {
                 if (prana >= 25) {
                   doEvil(reason);
-                } else {
-                  recharge();
                 }
               }
             }
