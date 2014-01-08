@@ -225,7 +225,7 @@ function initAccount(account) {
             if (!isGood) isGood = false; // just reminder
             var influence = isGood ? 'Heal' : 'Lightning';
             console.log("Gold: " + gold + ", Prana: " + prana + ", hp: " + hp + " ; Send " + influence + "!");
-            if (reason) log('Reason: ' + reason);
+            if (reason) console.log('Reason: ' + reason);
             isGood ? $('.enc_link').click() : $('.pun_link').click();
             setTimeout(function() {
               getState();
@@ -444,7 +444,6 @@ function initAccount(account) {
               getHeal().use();
             }
           } else {
-            page.render('boss.png');
             // TODO should we interact at all?
             var titles = $($('#o_info .line')[6]).find('.l_val').text().toLowerCase();
             var reason = titles + ' boss';
@@ -457,12 +456,14 @@ function initAccount(account) {
             var allies = $('#alls').find('.line .opp_n').parent();
             var aliveAllies = allies.find('div:contains(/)').length;
 
-            if (aliveAllies) {
+            var turn = parseInt($('#m_fight_log .block_title').text().match(/\d+/)[0]);
+            var bossTurn = turn % 2 === 0;
+            var myTurn = !bossTurn;
+
+            if (aliveAllies && myTurn) {
               if (hp < 50) {
                 if (prana >= 25) {
-                  doGood(reason + ' allies: ' + aliveAllies.length);
-                } else {
-                  recharge();
+                  doGood(reason + ' allies: ' + aliveAllies);
                 }
               }
             } else {
