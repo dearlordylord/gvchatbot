@@ -237,7 +237,7 @@ function initAccount(account) {
           var doEvil = function(reason) {doDeed(false, reason)};
           var doGood = function(reason) {doDeed(true, reason)};
           var recharge = function() {
-            if (charges < 150) return; // TODO safety
+            //if (charges < 150) return; // TODO safety
             console.log("Charges: " + charges + ", Prana: " + prana + " ; Recharging!");
             $('.dch_link').click();
             setTimeout(function() {
