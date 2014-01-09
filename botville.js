@@ -200,7 +200,7 @@ function initAccount(account) {
 
           var news = $('.f_news').text();
 
-          var isBoss = !!$('#opps').length || !!('#m_fight_log').length;
+          var isBoss = !!$('#opps').length || !!$('#m_fight_log').length;
 
           var isTrade = (function() {
             if (!news) return false;
