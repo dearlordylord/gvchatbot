@@ -206,8 +206,15 @@ function initAccount(account) {
             if (!news) return false;
             //'торговец', 'Получил...за', 'Вытребовал за', 'Поменял...на'  // n золотых монет, n монет, 'торговца'
             // По старой привычке отдаёт чай «Хана» бесплатно...
+            if (['Хотел бы я посмотреть на идиота, которому будут впаривать купленный у меня хлам.',
+              'Занимался любимым делом — сбывал честно награбленное.'].indexOf(news) !== -1) return true;
+            var other = ['Толпа зевак набилась в лавку', 'Хм, судя по цене — и впрямь бриллиантовая'];
+            for (var i = 0; i < other.length; i++) {
+              if (news.indexOf(other[i]) !== -1) return true;
+            }
             var n = news.toLowerCase();
             return n.match(/\d.*монет/) ||
+              n.match(/\d.*золот/) ||
               (n.indexOf('торгов') !== -1) ||
               (n.indexOf('бесплатно') !== -1);
 
@@ -395,7 +402,7 @@ function initAccount(account) {
           if (hp === 0) resurrectLink.click();
 
           if (!isBoss) {
-            if (getPhilosopherStone() && fatItems.length > 1) {
+            if (getPhilosopherStone() && fatItems.length > 1 && isTrade && !getPriceless()) {
               if (prana >= 25) {
                 getPhilosopherStone().use();
               } else {
