@@ -86,6 +86,13 @@ function initAccount(account) {
       }
     };
 
+    page.onNavigationRequested = function(url, type, willNavigate, main) {
+      console.log('Trying to navigate to: ' + url);
+      console.log('Caused by: ' + type);
+      console.log('Will actually navigate: ' + willNavigate);
+      console.log("Sent from the page's main frame: " + main);
+    }
+
     if (page.url == 'http://godville.net/login') {
       page.render('example_login.png');
       page.evaluate(function(args) {
@@ -109,7 +116,7 @@ function initAccount(account) {
       page.injectJs('node_modules/moment/moment.js');
       page.evaluate(function(account) {
 
-        var isGood = !!account.good;
+        var isGoodGod = !!account.good;
 
         var game = [];
 
@@ -387,7 +394,7 @@ function initAccount(account) {
           var isGameMonster = (function() {
             if (game.indexOf(monsterName) !== -1) return true;
             if (monsterName) {
-              var titles = ['Кирпичный', 'Зажиточный', 'Врачующий', 'Латающий', 'Смертоносный', 'Сюжетный', 'Дарующий'];
+              var titles = ['Кирпичный', 'Зажиточный', 'Врачующий', 'Латающий', 'Смертоносный', 'Сюжетный', 'Дарующий', 'Запасливый'];
               for (var i = 0; i < titles.length; i++) {
                 var title = titles[i];
                 if (monsterName.indexOf(title) === 0) return true;
@@ -406,7 +413,7 @@ function initAccount(account) {
 
           if (hp === 0) resurrectLink.click();
 
-          if (!isGood) {
+          if (!isGoodGod) {
             if (!isBoss) {
               if (getPhilosopherStone() && fatItems.length > 1 && isTrade && !getPriceless()) {
                 if (prana >= 25) {
