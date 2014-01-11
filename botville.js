@@ -26,7 +26,8 @@ var acc = function() {
   } else { // heroku deploy
     return {
       login: env['LOGIN'],
-      password: env['PASSWORD']
+      password: env['PASSWORD'],
+      good: env['GOOD']
     }
   }
 }();
@@ -43,6 +44,7 @@ function initAccount(account) {
 
   var l = account.login;
   var p = account.password;
+
   var name = require('./lib/transliterate.js')(l);
 
   function log(msg, isJournal) {
@@ -79,7 +81,7 @@ function initAccount(account) {
         };
       } else {
         page.onLoadFinished = function() {
-          initHeroBot();
+          initHeroBot(account);
         };
       }
     };
@@ -95,16 +97,19 @@ function initAccount(account) {
         password: p
       });
     } else {
-      initHeroBot();
+      initHeroBot(account);
     }
 
 
-    function initHeroBot() {
+    function initHeroBot(account) {
       page.render('example.png');
       log('initializing hero bot...');
+      log(account.good);
       page.injectJs('node_modules/underscore/underscore.js');
       page.injectJs('node_modules/moment/moment.js');
-      page.evaluate(function() {
+      page.evaluate(function(account) {
+
+        var isGood = !!account.good;
 
         var game = [];
 
@@ -120,7 +125,7 @@ function initAccount(account) {
 
         }
 
-        // game = дичь; game of thrones use it, so why not
+        // game = дичь
         (function scheduleGetGame() {
           // check every (hour+2minutes) for new game in news
           var nextRun = moment().startOf('hour').add(1, 'h').add(2, 'm').diff(moment());
@@ -401,94 +406,100 @@ function initAccount(account) {
 
           if (hp === 0) resurrectLink.click();
 
-          if (!isBoss) {
-            if (getPhilosopherStone() && fatItems.length > 1 && isTrade && !getPriceless()) {
-              if (prana >= 25) {
-                getPhilosopherStone().use();
-              } else {
-                recharge();
-              }
-            } else if (getCoolThings()) {
-              getCoolThings().use();
-            } else if (isMeltable) { // melt gold
-              console.log(lastNews);
-              //if (getBomb()) getBomb().use(); it's better to sell bombs
-              if (prana >= 25) {
-                doEvil();
-              } else {
-                recharge();
-              }
-            } else if (isFight && isGameMonster && monsterHp > hp) {
-              console.log('Found game monster: ' + monsterName);
-              if (hp <= 10) {
+          if (!isGood) {
+            if (!isBoss) {
+              if (getPhilosopherStone() && fatItems.length > 1 && isTrade && !getPriceless()) {
                 if (prana >= 25) {
-                  doGood();
+                  getPhilosopherStone().use();
                 } else {
                   recharge();
                 }
-              } else {
+              } else if (getCoolThings()) {
+                getCoolThings().use();
+              } else if (isMeltable) { // melt gold
+                console.log(lastNews);
+                //if (getBomb()) getBomb().use(); it's better to sell bombs
                 if (prana >= 25) {
                   doEvil();
                 } else {
                   recharge();
                 }
+              } else if (isFight && isGameMonster && monsterHp > hp) {
+                console.log('Found game monster: ' + monsterName);
+                if (hp <= 10) {
+                  if (prana >= 25) {
+                    doGood();
+                  } else {
+                    recharge();
+                  }
+                } else {
+                  if (prana >= 25) {
+                    doEvil();
+                  } else {
+                    recharge();
+                  }
+                }
+              } else if (!isFight && !isInTown && getBossItem()) {
+                if (prana >= 50) {
+                  getBossItem().use();
+                } else {
+                  recharge();
+                }
+              } else if (shitQuest && prana >= 5 && !isFight &&  (lastYell + SECONDS_BETWEEN_YELLS < now)) {
+                cancelQuestYell();
+              } else if (prana >= 80 && !isFight && !isInTown && hp >= 50 &&  // hp is percent
+                (lastYell + SECONDS_BETWEEN_YELLS < now) && !foundBoss && charges >= 2) {
+                digYell();
+              } else if (prana >= 80 && !isInTown && hp < 20) {
+                doGood();
+              } else if (prana >= 50 && hp < 10 && getHeal()) {
+                getHeal().use();
               }
-            }
-            else if (!isFight && !isInTown && getBossItem()) {
-              if (prana >= 50) {
-                getBossItem().use();
-              } else {
-                recharge();
+            } else {
+              // TODO should we interact at all?
+              var titles = $($('#o_info .line')[6]).find('.l_val').text().toLowerCase();
+              var reason = titles + ' boss';
+              var deaf = (titles.indexOf('глушащий') !== -1);
+              var parasite = (titles.indexOf('паразитирующий') !== -1);
+              var dangerous = (titles.indexOf('мощный') !== -1 ? 1 : 0) + (titles.indexOf('бойкий') !== -1 ? 1 : 0);
+              var mirror = (titles.indexOf('лучезарный') !== -1) || (titles.indexOf('неверующий') !== -1);
+              // <div id="alls" class="block"><div class="block_h"><span class="l_slot"> <span class="b_handle m_hover" style="display: none;" title="Переместить блок">●</span> </span><div class="block_title">Союзники</div><span class="r_slot"><span class="h_min m_hover" style="display: none;">↑</span></span></div><div class="block_content"><div><div><div class="line"><div class="opp_n">Смашор</div><div class="opp_dropdown fb_round_badge popover-button">▼</div><div class="opp_h">61 / 336</div></div><div class="line"><div class="opp_n">Hanzel</div><div class="opp_dropdown fb_round_badge popover-button">▼</div><div class="opp_h">48 / 136</div></div><div class="line"><div class="opp_n">Скарога</div><div class="opp_dropdown fb_round_badge popover-button">▼</div><div class="opp_h">повержен</div></div></div></div><div class="line"></div></div></div>
+
+              var allies = $('#alls').find('.line .opp_n').parent();
+              var aliveAllies = allies.find('div:contains(/)').length;
+
+              var turn = parseInt($('#m_fight_log .block_title').text().match(/\d+/)[0]);
+              var bossTurn = turn % 2 === 0;
+              var myTurn = !bossTurn;
+
+              if (aliveAllies && myTurn) {
+                if (hp < 50) {
+                  if (prana >= 25) {
+                    doGood(reason + ' allies: ' + aliveAllies);
+                  }
+                }
+              } else if (!aliveAllies) {
+                if (myTurn && (hp < 30 || (hp < 50 && !parasite))) {
+                  if (prana >= 25) {
+                    doGood(reason);
+                  }
+                } else if (!mirror && bossTurn) {
+                  if (prana >= 25) {
+                    doEvil(reason);
+                  }
+                }
               }
-            } else if (shitQuest && prana >= 5 && !isFight &&  (lastYell + SECONDS_BETWEEN_YELLS < now)) {
-              cancelQuestYell();
-            } else if (prana >= 80 && !isFight && !isInTown && hp >= 50 &&  // hp is percent
-              (lastYell + SECONDS_BETWEEN_YELLS < now) && !foundBoss && charges >= 2) {
-              digYell();
-            } else if (prana >= 80 && !isInTown && hp < 20) {
-              doGood();
-            } else if (prana >= 50 && hp < 10 && getHeal()) {
-              getHeal().use();
+
             }
           } else {
-            // TODO should we interact at all?
-            var titles = $($('#o_info .line')[6]).find('.l_val').text().toLowerCase();
-            var reason = titles + ' boss';
-            var deaf = (titles.indexOf('глушащий') !== -1);
-            var parasite = (titles.indexOf('паразитирующий') !== -1);
-            var dangerous = (titles.indexOf('мощный') !== -1 ? 1 : 0) + (titles.indexOf('бойкий') !== -1 ? 1 : 0);
-            var mirror = (titles.indexOf('лучезарный') !== -1) || (titles.indexOf('неверующий') !== -1);
-            // <div id="alls" class="block"><div class="block_h"><span class="l_slot"> <span class="b_handle m_hover" style="display: none;" title="Переместить блок">●</span> </span><div class="block_title">Союзники</div><span class="r_slot"><span class="h_min m_hover" style="display: none;">↑</span></span></div><div class="block_content"><div><div><div class="line"><div class="opp_n">Смашор</div><div class="opp_dropdown fb_round_badge popover-button">▼</div><div class="opp_h">61 / 336</div></div><div class="line"><div class="opp_n">Hanzel</div><div class="opp_dropdown fb_round_badge popover-button">▼</div><div class="opp_h">48 / 136</div></div><div class="line"><div class="opp_n">Скарога</div><div class="opp_dropdown fb_round_badge popover-button">▼</div><div class="opp_h">повержен</div></div></div></div><div class="line"></div></div></div>
-
-            var allies = $('#alls').find('.line .opp_n').parent();
-            var aliveAllies = allies.find('div:contains(/)').length;
-
-            var turn = parseInt($('#m_fight_log .block_title').text().match(/\d+/)[0]);
-            var bossTurn = turn % 2 === 0;
-            var myTurn = !bossTurn;
-
-            if (aliveAllies && myTurn) {
-              if (hp < 50) {
-                if (prana >= 25) {
-                  doGood(reason + ' allies: ' + aliveAllies);
-                }
-              }
-            } else if (!aliveAllies) {
-              if (myTurn && (hp < 30 || (hp < 50 && !parasite))) {
-                if (prana >= 25) {
-                  doGood(reason);
-                }
-              } else if (!mirror && bossTurn) {
-                if (prana >= 25) {
-                  doEvil(reason);
-                }
-              }
+            if (prana >= 25 && hp < 50) {
+              doGood();
+            } else if (getCoolThings()) {
+              getCoolThings().use();
             }
-
           }
-          // make bricks of stone
         }
-      });
+      }, account);
       log('started');
     }
   });
