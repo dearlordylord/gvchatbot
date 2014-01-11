@@ -91,7 +91,11 @@ function initAccount(account) {
       console.log('Caused by: ' + type);
       console.log('Will actually navigate: ' + willNavigate);
       console.log("Sent from the page's main frame: " + main);
-    }
+    };
+
+    page.onResourceReceived = function(response) {
+      console.log('Response (#' + response.id + ', stage "' + response.stage + '"): ' + JSON.stringify(response));
+    };
 
     if (page.url == 'http://godville.net/login') {
       page.render('example_login.png');
