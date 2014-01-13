@@ -93,9 +93,6 @@ function initAccount(account) {
       console.log("Sent from the page's main frame: " + main);
     };
 
-    page.onResourceReceived = function(response) {
-      console.log('Response (#' + response.id + ', stage "' + response.stage + '"): ' + JSON.stringify(response));
-    };
 
     if (page.url == 'http://godville.net/login') {
       page.render('example_login.png');
@@ -113,7 +110,9 @@ function initAccount(account) {
 
 
     function initHeroBot(account) {
-      page.render('example.png');
+      setInterval(function() {
+        page.render('example.png');
+      }, 10000);
       log('initializing hero bot...');
       log(account.good);
       page.injectJs('node_modules/underscore/underscore.js');
@@ -150,7 +149,7 @@ function initAccount(account) {
 
         var SECONDS_BETWEEN_YELLS = 180;
         var getRandom = function(items) {return items[Math.floor(Math.random()*items.length)]};
-        var digWords = {verbs: ['копай', 'ищи'],  nouns: ['клад', 'золото']};
+        var digWords = {verbs: ['копай'],  nouns: ['клад', 'золото']};
         var cancelQuestWords = {verbs: ['отмени', 'брось'],  nouns: ['квест', 'задание']};
         var questWords = {verbs: ['выполняй быстрее', 'делай скорее', 'выполняй скорее', 'делай быстрее'],  nouns: ['задание', 'квест']};
         var violateWords = ['шакал', 'червь', 'ничтожество', 'нехороший человек', 'свинья'];
