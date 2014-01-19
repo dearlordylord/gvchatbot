@@ -12,6 +12,8 @@ var _ = require('underscore');
 
 var fs = require('fs');
 
+var godvilleUrl = env['GODVILLE_URL'] || 'http://godville.net';
+
 var config = function() {
   if (fs.exists('./config.json')) {
     return require('./config.json');
@@ -31,6 +33,8 @@ var acc = function() {
     }
   }
 }();
+
+acc.godvilleUrl = godvilleUrl;
 
 if (acc) {
   initAccount(acc);
@@ -65,7 +69,13 @@ function initAccount(account) {
     }
   }
 
-  page.open('http://godville.net/superhero', function() {
+  page.onResourceReceived = function(resource) {
+    if (url == resource.url && resource.redirectURL) {
+      console.warn('redirect: ' + resource.redirectURL)
+    }
+  };
+
+  page.open(godvilleUrl + '/superhero', function() {
 
     page.onConsoleMessage = function(msg) {
       if (msg.indexOf('_JOURNAL_') === 0) log(msg.slice('_JOURNAL_'.length, msg.length), true);
@@ -73,10 +83,10 @@ function initAccount(account) {
     };
 
     page.onUrlChanged = function(url) {
-      if (url == 'http://godville.net/news') { // sometimes redirecting with (possibly) reason that news is changed, but not everytime!
+      if (url == (godvilleUrl + '/news')) { // sometimes redirecting with (possibly) reason that news is changed, but not everytime!
         page.onLoadFinished = function() {
           page.evaluate(function() {
-            document.location = 'http://godville.net/superhero';
+            document.location = godvilleUrl + '/superhero';
           });
         };
       } else {
@@ -94,7 +104,7 @@ function initAccount(account) {
     };
 
 
-    if (page.url == 'http://godville.net/login') {
+    if (page.url == godvilleUrl + '/login') {
       page.render('example_login.png');
       page.evaluate(function(args) {
         $('#username').val(args.login); // Гнозис
@@ -147,7 +157,7 @@ function initAccount(account) {
         var lastLog = [];
         var isFirstRun = true;
 
-        var SECONDS_BETWEEN_YELLS = 180;
+        var SECONDS_BETWEEN_YELLS = 60;
         var getRandom = function(items) {return items[Math.floor(Math.random()*items.length)]};
         var digWords = {verbs: ['копай'],  nouns: ['клад', 'золото']};
         var cancelQuestWords = {verbs: ['отмени', 'брось'],  nouns: ['квест', 'задание']};
@@ -159,7 +169,7 @@ function initAccount(account) {
         var interHandler = setInterval(init, 5000);
 
         function init() {
-          if (document.URL !== 'http://godville.net/superhero') {
+          if (document.URL !== account.godvilleUrl + '/superhero') {
             console.log('url changed, restarting bot');
             clearInterval(interHandler); return;
           }
@@ -223,7 +233,8 @@ function initAccount(account) {
             // По старой привычке отдаёт чай «Хана» бесплатно...
             if (['Хотел бы я посмотреть на идиота, которому будут впаривать купленный у меня хлам.',
               'Занимался любимым делом — сбывал честно награбленное.'].indexOf(news) !== -1) return true;
-            var other = ['Толпа зевак набилась в лавку', 'Хм, судя по цене — и впрямь бриллиантовая'];
+            var other = ['Толпа зевак набилась в лавку', 'Хм, судя по цене — и впрямь бриллиантовая',
+              'В приступе внезапной щедрости'];
             for (var i = 0; i < other.length; i++) {
               if (news.indexOf(other[i]) !== -1) return true;
             }
@@ -295,7 +306,8 @@ function initAccount(account) {
           var getBossItem = function() {
             return getFatItem([
               'конструктор босса (@)', 'эссенцию геройской дурости (@)', 'зелье беспричинной храбрости (@)', 'стравинку (@)',
-              'карту вредных ископаемых (@)', 'лопату для самокопания (@)', 'волшебную палку-копалку (@)', 'накопальню (@)'
+              'карту вредных ископаемых (@)', 'лопату для самокопания (@)', 'волшебную палку-копалку (@)', 'накопальню (@)',
+              'чёртика в табакерке (@)'
             ]);
           };
           var getPriceless = function() {
@@ -400,7 +412,7 @@ function initAccount(account) {
               var titles = ['Кирпичный', 'Зажиточный', 'Врачующий', 'Латающий', 'Смертоносный', 'Сюжетный', 'Дарующий', 'Запасливый'];
               for (var i = 0; i < titles.length; i++) {
                 var title = titles[i];
-                if (monsterName.indexOf(title) === 0) return true;
+                if (monsterName.indexOf(title) === 0) return title;
               }
             }
             return false;
@@ -436,7 +448,9 @@ function initAccount(account) {
                 }
               } else if (isFight && isGameMonster && monsterHp > hp) {
                 console.log('Found game monster: ' + monsterName);
-                if (hp <= 10) {
+                if (isGameMonster === 'Лучезарный' && prana >= 25) {
+                  doEvil();
+                } else if (hp <= 10) {
                   if (prana >= 25) {
                     doGood();
                   } else {
