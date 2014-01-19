@@ -70,7 +70,7 @@ function initAccount(account) {
   }
 
   page.onResourceReceived = function(resource) {
-    if (url == resource.url && resource.redirectURL) {
+    if (resource.redirectURL) {
       console.warn('redirect: ' + resource.redirectURL)
     }
   };
