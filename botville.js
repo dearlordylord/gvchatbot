@@ -75,7 +75,7 @@ function initAccount(account) {
     }
   };
 
-  page.open(godvilleUrl + '/superhero', function() {
+  page.open(account.godvilleUrl + '/superhero', function() {
 
     page.onConsoleMessage = function(msg) {
       if (msg.indexOf('_JOURNAL_') === 0) log(msg.slice('_JOURNAL_'.length, msg.length), true);
@@ -83,10 +83,10 @@ function initAccount(account) {
     };
 
     page.onUrlChanged = function(url) {
-      if (url == (godvilleUrl + '/news')) { // sometimes redirecting with (possibly) reason that news is changed, but not everytime!
+      if (url == (account.godvilleUrl + '/news')) { // sometimes redirecting with (possibly) reason that news is changed, but not everytime!
         page.onLoadFinished = function() {
           page.evaluate(function() {
-            document.location = godvilleUrl + '/superhero';
+            document.location = account.godvilleUrl + '/superhero';
           });
         };
       } else {
@@ -104,7 +104,7 @@ function initAccount(account) {
     };
 
 
-    if (page.url == godvilleUrl + '/login') {
+    if (page.url == account.godvilleUrl + '/login') {
       page.render('example_login.png');
       page.evaluate(function(args) {
         $('#username').val(args.login); // Гнозис
