@@ -91,7 +91,12 @@ function initAccount(account) {
         };
       } else {
         page.onLoadFinished = function() {
-          initHeroBot(account);
+          try {
+            initHeroBot(account);
+          } catch (e) {
+            // 502 error?
+            initAccount(account);
+          }
         };
       }
     };
