@@ -85,9 +85,9 @@ function initAccount(account) {
     page.onUrlChanged = function(url) {
       if (url == (account.godvilleUrl + '/news')) { // sometimes redirecting with (possibly) reason that news is changed, but not everytime!
         page.onLoadFinished = function() {
-          page.evaluate(function() {
+          page.evaluate(function(account) {
             document.location = account.godvilleUrl + '/superhero';
-          });
+          }, account);
         };
       } else {
         page.onLoadFinished = function() {
