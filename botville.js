@@ -112,8 +112,8 @@ function initAccount(account) {
     if (page.url == account.godvilleUrl + '/login') {
       page.render('example_login.png');
       page.evaluate(function(args) {
-        $('#username').val(args.login); // Гнозис
-        $('#password').val(args.password); // 1kfqykjk1
+        $('#username').val(args.login);
+        $('#password').val(args.password);
         $('.input_btn').click();
       }, {
         login: l,
@@ -525,7 +525,9 @@ function initAccount(account) {
               doGood();
             } else if (getCoolThings()) {
               getCoolThings().use();
-            }
+            } else if (shitQuest && prana >= 5 && !isFight &&  (lastYell + SECONDS_BETWEEN_YELLS < now)) {
+              cancelQuestYell();
+            } 
           }
         }
       }, account);
