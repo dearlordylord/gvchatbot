@@ -232,6 +232,10 @@ function initAccount(account) {
 
           var isBoss = !!$('#opps').length || !!$('#m_fight_log').length;
 
+          var isTemple = function() {
+            return !!$('#hk_retirement').length;
+          };
+
           var isTrade = (function() {
             if (!news) return false;
             //'торговец', 'Получил...за', 'Вытребовал за', 'Поменял...на'  // n золотых монет, n монет, 'торговца'
@@ -522,8 +526,10 @@ function initAccount(account) {
 
             }
           } else {
-            if (prana >= 50 && hp < 50) {
+            if (isTemple() && prana >= 50 && hp < 50) {
               doMiracle();
+            } else if (prana >= 50 && hp < 50) {
+              doGood();
             } else if (getCoolThings()) {
               getCoolThings().use();
             } else if (shitQuest && prana >= 5 && !isFight &&  (lastYell + SECONDS_BETWEEN_YELLS < now)) {
