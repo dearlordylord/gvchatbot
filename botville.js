@@ -526,7 +526,7 @@ function initAccount(account) {
 
             }
           } else {
-            if (isTemple() && prana >= 50 && hp < 50) {
+            if (isTemple() && prana >= 50 && isInTown()) {
               doMiracle();
             } else if (prana >= 50 && hp < 50) {
               doGood();
