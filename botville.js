@@ -274,6 +274,7 @@ function initAccount(account) {
           };
           var doEvil = function(reason) {doDeed(false, reason)};
           var doGood = function(reason) {doDeed(true, reason)};
+          var doMiracle = function() {$('.mir_link').click()};
           var recharge = function() {
             //if (charges < 150) return; // TODO safety
             console.log("Charges: " + charges + ", Prana: " + prana + " ; Recharging!");
@@ -521,8 +522,8 @@ function initAccount(account) {
 
             }
           } else {
-            if (prana >= 25 && hp < 50) {
-              doGood();
+            if (prana >= 50 && hp < 50) {
+              doMiracle();
             } else if (getCoolThings()) {
               getCoolThings().use();
             } else if (shitQuest && prana >= 5 && !isFight &&  (lastYell + SECONDS_BETWEEN_YELLS < now)) {
