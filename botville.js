@@ -175,7 +175,7 @@ function initAccount(account) {
           setTimeout(function() {
             var guildChatContent =
               $('.frMsgBlock').filter(function(i, e) {return $(e).css('display') === 'block'}).find('.frMsgArea > div');
-            var chatTimeFormats = ['hh:mm', 'DD.MM.YY hh:mm'];
+            var chatTimeFormats = ['hh:mm', 'DD.MM.YY HH:mm'];
             if (!guildChatContent.length) console.log('guildchat content is not found');
             guildChatContent.bind('DOMNodeInserted', function(e) {
               var node = $(e.target);
