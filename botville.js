@@ -186,7 +186,7 @@ function initAccount(account) {
               console.log(_time)
               var time = moment(_time, chatTimeFormats).unix();
               console.log(time)
-              console.log('__CHAT__' + _time + ';' + time);
+              console.log('__CHAT__' + text + ';' + time);
             });
           });
 
