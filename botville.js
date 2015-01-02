@@ -162,7 +162,7 @@ function initAccount(account) {
 
 
       // Sintoi break module
-      var lastBreak = moment.unix();
+      var lastBreak = moment.unix(0);
 
       emitter.on('chat', function(msg) {
         var time = moment.unix(msg.timestamp);
