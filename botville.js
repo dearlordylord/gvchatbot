@@ -96,11 +96,10 @@ function initAccount(account) {
           else if (msg.indexOf('__CHAT__') === 0) {
             msg = msg.slice('__CHAT__'.length, msg.length);
             var msgs = msg.split(';');
-            console.warn(msg)
             var text = msgs.slice(0, -3).join(';');
             var timestamp = Number(msgs.slice(-3, -2)[0]);
             var user = msgs.slice(-2, -1)[0];
-            var id = Number(msgs.slice(-1, 0)[0]);
+            var id = Number(msgs.slice(-1)[0]);
             log({
               text: text,
               timestamp: timestamp,
@@ -144,7 +143,6 @@ function initAccount(account) {
           log('login promt');
           page.render('example_login.png');
           page.evaluate(function(args) {
-            console.warn(args)
             $('#username').val(args.login);
             $('#password').val(args.password);
             $('.input_btn').click();
@@ -172,15 +170,22 @@ function initAccount(account) {
         page.injectJs('node_modules/moment/moment.js');
         page.evaluate(function(account) {
 
+          var lastMessageTimestamp = 0;
+          var lastMessageId = 0;
+
           $(document).ajaxComplete(function(event, xhr, settings) {
             if (settings.url === 'http://godville.net/fbh/feed') {
               if (xhr.responseJSON && xhr.responseJSON.msg) {
                 console.log(JSON.stringify(xhr.responseJSON.msg))
                 xhr.responseJSON.msg.forEach(function(msg) {
                   var time = moment(msg.t).unix();
+                  var id = msg.id;
+                  if (lastMessageTimestamp > time || lastMessageId === id) return;
+                  lastMessageTimestamp = time;
+                  lastMessageId = id;
                   var user = msg.u;
                   var text = msg.m;
-                  var id = msg.id;
+
                   console.log('__CHAT__' + text + ';' + time + ';' + user + ';' + id);
                 })
 

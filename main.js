@@ -1,8 +1,18 @@
 var bot = require('./botville.js');
 
 var express = require('express');
+var _ = require('underscore');
 
 var app = express();
+
+var config = {};
+try {
+  var args = process.argv.slice(2);
+  config = _.find(require('./config.json').accounts, function(a) {
+    return a.id === Number(args[0]);
+  });
+} catch (e) {
+}
 
 app.use(express.static(__dirname + '/static'));
 //app.get('/', function(req, res) {
@@ -11,7 +21,11 @@ app.use(express.static(__dirname + '/static'));
 
 //var app = require('http').createServer(app);
 
+var MongoClient = require('mongodb').MongoClient;
+var mongoUrl = 'mongodb://' + (process.env['MONGODB_LOGIN'] || config.mongodbLogin) + ':' +
+  (process.env['MONGODB_PASSWORD'] || config.mongodbPassword) + '@ds029831.mongolab.com:29831/heroku_app21019611';
 
+console.warn(mongoUrl)
 
 var EventEmitter = require('events').EventEmitter;
 var emitter = new EventEmitter();
@@ -28,34 +42,59 @@ var server = app.listen(port, function() {
 
 var io = require('socket.io').listen(server);
 
-var messages = [];
+MongoClient.connect(mongoUrl, function(err, db) {
 
-bot.on('chat', function(msg) {
+  if (err) console.error(err);
 
-  var lastMsg = messages[0];
-  console.warn('chat event!')
-  console.warn(msg.timestamp)
-  if (lastMsg && lastMsg.timestamp > msg.timestamp) return;
-  if (lastMsg && lastMsg.timestamp === msg.timestamp && lastMsg.text === msg.text) return;
-  messages.unshift(msg);
-  emitter.emit('chat', msg);
+  db.collection('gmessages', function(err, gmessages) {
 
-});
+    if (err) return console.error(err);
+
+    console.log('connected to mongo');
+
+    gmessages.ensureIndex( { id: 1 }, { unique: true, dropDups: true }, function(err) {
+      if (err) return console.error(err);
+
+      bot.on('chat', function(msg) {
+        gmessages.insert(msg, function(err) {
+          if (err) return console.error(err);
+          else {
+            if (!msg) {
+              console.warn('what the fuck')
+            }
+            emitter.emit('chat', msg);
+          }
+        });
+      });
 
 
-io.sockets.on('connection', function (socket) {
+      io.sockets.on('connection', function (socket) {
 
-  var callback = function(m) {
-    socket.emit('chat', m);
-  };
+        var callback = function(m) {
+          if (m) socket.emit('chat', m);
+        };
 
-  for(var i = messages.length-1; i >= 0; i--) {
-    callback(messages[i]);
-  }
+        gmessages.find().sort({timestamp: 1}).each(function(err, m) {
+          if (err) return console.error(err);
+          if (!m) {
+            console.warn('what the fuck 2')
+          }
+          callback(m);
+        });
 
-  emitter.on('chat', callback);
+        emitter.on('chat', callback);
 
-  socket.on('close', function () {
-    emitter.removeListener('chat', callback);
+        socket.on('close', function () {
+          emitter.removeListener('chat', callback);
+        });
+      });
+    });
+
+
+
   });
+
+
+
 });
+
