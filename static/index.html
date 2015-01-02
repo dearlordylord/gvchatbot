@@ -28,9 +28,16 @@
             };
         }());
 
+        var linkify = function(text) {
+            var urlRegex =/(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
+            return text.replace(urlRegex, function(url) {
+                return '<a href="' + url + '">' + url + '</a>';
+            })
+        };
+
         socket.on('chat', function(msg) {
             var li = document.createElement('li');
-            li.innerHTML = escapeHTML('[' + msg.timestamp + ']' + msg.user +  ': ' + msg.text);
+            li.innerHTML = linkify(escapeHTML('[' + msg.timestamp + ']' + msg.user +  ': ' + msg.text));
             document.querySelector('#messages').appendChild(li);
         });
     </script>
