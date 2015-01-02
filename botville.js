@@ -162,21 +162,18 @@ function initAccount(account) {
 
 
       // Sintoi break module
-      var lastBreak = moment.unix(0);
-      var who = 'Синтои';
+      var lastBreak = moment();
 
       emitter.on('chat', function(msg) {
-        console.warn(msg.user)
-        if (msg.user === who) {
-
-          var time = moment.unix(msg.timestamp);
-          if (time.diff(lastBreak, 'hours') > 1) {
-            lastBreak = time;
-            page.evaluate(function() {
-              $('.frbutton_pressed .frInputArea textarea').val('брейк');
-              $('.frbutton_pressed .frInputArea textarea').trigger($.Event("keypress", { which: 13}));
-            });
-          }
+        var time = moment.unix(msg.timestamp);
+        var isSong = msg.text.split('\n').length > 2;
+        console.warn(msg.text.split('\n').length)
+        if (isSong && time.diff(lastBreak, 'minutes') > 1) {
+          lastBreak = time;
+          page.evaluate(function() {
+            $('.frbutton_pressed .frInputArea textarea').val('брейк');
+            $('.frbutton_pressed .frInputArea textarea').trigger($.Event("keypress", { which: 13}));
+          });
         }
       });
 
