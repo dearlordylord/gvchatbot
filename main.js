@@ -35,7 +35,6 @@ bot.on('chat', function(msg) {
   var lastMsg = messages[0];
   console.warn('chat event!')
   console.warn(msg.timestamp)
-  console.warn(msg.message)
   if (lastMsg && lastMsg.timestamp >= msg.timestamp) return;
   messages.unshift(msg);
   emitter.emit('chat', msg);
@@ -49,7 +48,9 @@ io.sockets.on('connection', function (socket) {
     socket.emit('chat', m);
   };
 
-  messages.reverse().forEach(callback);
+  for(var i = messages.length-1; i >= 0; i--) {
+    callback(messages[i]);
+  }
 
   emitter.on('chat', callback);
 
