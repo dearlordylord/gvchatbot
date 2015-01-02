@@ -161,6 +161,27 @@ function initAccount(account) {
 
 
 
+      // Sintoi break module
+      var lastBreak = moment.unix(0);
+      var who = 'Синтои';
+
+      emitter.on('chat', function(msg) {
+        console.warn(msg.user)
+        if (msg.user === who) {
+
+          var time = moment.unix(msg.timestamp);
+          if (time.diff(lastBreak, 'hours') > 1) {
+            lastBreak = time;
+            page.evaluate(function() {
+              $('.frbutton_pressed .frInputArea textarea').val('брейк');
+              $('.frbutton_pressed .frInputArea textarea').trigger($.Event("keypress", { which: 13}));
+            });
+          }
+        }
+      });
+
+
+
       function initHeroBot(account) {
         setInterval(function() {
           page.render('example.png');
@@ -176,7 +197,6 @@ function initAccount(account) {
           $(document).ajaxComplete(function(event, xhr, settings) {
             if (settings.url === 'http://godville.net/fbh/feed') {
               if (xhr.responseJSON && xhr.responseJSON.msg) {
-                console.log(JSON.stringify(xhr.responseJSON.msg))
                 xhr.responseJSON.msg.forEach(function(msg) {
                   var time = moment(msg.t).unix();
                   var id = msg.id;
