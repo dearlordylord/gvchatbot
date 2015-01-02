@@ -20,9 +20,17 @@
     <script>
         var socket = io.connect(window.location.hostname);
 
+        var escapeHTML = (function () {
+            'use strict';
+            var chr = { '"': '&quot;', '&': '&amp;', '<': '&lt;', '>': '&gt;' };
+            return function (text) {
+                return text.replace(/[\"&<>]/g, function (a) { return chr[a]; });
+            };
+        }());
+
         socket.on('chat', function(msg) {
             var li = document.createElement('li');
-            li.innerHTML = '[' + msg.timestamp + ']' + msg.user +  ': ' + msg.text;
+            li.innerHTML = escapeHTML('[' + msg.timestamp + ']' + msg.user +  ': ' + msg.text);
             document.querySelector('#messages').appendChild(li);
         });
     </script>

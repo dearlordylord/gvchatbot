@@ -25,8 +25,6 @@ var MongoClient = require('mongodb').MongoClient;
 var mongoUrl = 'mongodb://' + (process.env['MONGODB_LOGIN'] || config.mongodbLogin) + ':' +
   (process.env['MONGODB_PASSWORD'] || config.mongodbPassword) + '@ds029831.mongolab.com:29831/heroku_app21019611';
 
-console.warn(mongoUrl)
-
 var EventEmitter = require('events').EventEmitter;
 var emitter = new EventEmitter();
 

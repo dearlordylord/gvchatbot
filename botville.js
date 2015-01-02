@@ -167,7 +167,6 @@ function initAccount(account) {
       emitter.on('chat', function(msg) {
         var time = moment.unix(msg.timestamp);
         var isSong = msg.text.split('\n').length > 2;
-        console.warn(msg.text.split('\n').length)
         if (isSong && time.diff(lastBreak, 'minutes') > 1) {
           lastBreak = time;
           page.evaluate(function() {
