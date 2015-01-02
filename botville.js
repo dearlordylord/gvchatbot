@@ -181,10 +181,8 @@ function initAccount(account) {
               var node = $(e.target);
               var nc = node.contents();
               var text = nc[0].data;
-              var _time = nc[1].innerHTML.trim();
-              console.log(_time)
+              var _time = $(nc[1]).children().last().attr('title');
               var time = moment(_time, chatTimeFormats).unix();
-              console.log(time)
               console.log('__CHAT__' + text + ';' + time);
             });
           });
