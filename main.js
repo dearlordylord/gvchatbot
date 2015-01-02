@@ -35,7 +35,8 @@ bot.on('chat', function(msg) {
   var lastMsg = messages[0];
   console.warn('chat event!')
   console.warn(msg.timestamp)
-  //if (lastMsg && lastMsg.timestamp >= msg.timestamp) return;
+  if (lastMsg && lastMsg.timestamp > msg.timestamp) return;
+  if (lastMsg && lastMsg.timestamp === msg.timestamp && lastMsg.msg === msg.msg) return;
   messages.unshift(msg);
   emitter.emit('chat', msg);
 
