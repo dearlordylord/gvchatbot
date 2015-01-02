@@ -58,7 +58,7 @@ function initAccount(account) {
     try {
       if (type === 'chat') {
         emitter.emit('chat', msg);
-        msg = msg.msg;
+        msg = msg.text;
       }
       var heroMsg = '[' + moment().format() + '] ' + msg;
       //if (!isJournal) {
@@ -86,9 +86,6 @@ function initAccount(account) {
 
   var initPages = function(page, news) {
     page.set('onResourceReceived', function(resource) {
-      if (resource.redirectURL) {
-        console.warn('redirect: ' + resource.redirectURL)
-      }
     });
 
     page.open(account.godvilleUrl + '/superhero', function(status) {
@@ -99,11 +96,16 @@ function initAccount(account) {
           else if (msg.indexOf('__CHAT__') === 0) {
             msg = msg.slice('__CHAT__'.length, msg.length);
             var msgs = msg.split(';');
-            msg = msgs.slice(0, -1).join(';');
-            var timestamp = Number(msgs.slice(-1)[0]);
+            console.warn(msg)
+            var text = msgs.slice(0, -3).join(';');
+            var timestamp = Number(msgs.slice(-3, -2)[0]);
+            var user = msgs.slice(-2, -1)[0];
+            var id = Number(msgs.slice(-1, 0)[0]);
             log({
-              msg: msg,
-              timestamp: timestamp
+              text: text,
+              timestamp: timestamp,
+              user: user,
+              id: id
             }, 'chat');
           }
           else log(msg);
@@ -170,25 +172,28 @@ function initAccount(account) {
         page.injectJs('node_modules/moment/moment.js');
         page.evaluate(function(account) {
 
+          $(document).ajaxComplete(function(event, xhr, settings) {
+            if (settings.url === 'http://godville.net/fbh/feed') {
+              if (xhr.responseJSON && xhr.responseJSON.msg) {
+                console.log(JSON.stringify(xhr.responseJSON.msg))
+                xhr.responseJSON.msg.forEach(function(msg) {
+                  var time = moment(msg.t).unix();
+                  var user = msg.u;
+                  var text = msg.m;
+                  var id = msg.id;
+                  console.log('__CHAT__' + text + ';' + time + ';' + user + ';' + id);
+                })
+
+              }
+
+            }
+
+          });
+
           $('.frbutton').click(); // open 'friends'
           $('.fr_line_top:contains(Гильдсовет)').click(); // load guild chat
-          setTimeout(function() {
-            var guildChatContent =
-              $('.frMsgBlock').filter(function(i, e) {return $(e).css('display') === 'block'}).find('.frMsgArea > div');
-            var chatTimeFormats = ['DD.MM.YY HH:mm', 'HH:mm'];
-            if (!guildChatContent.length) console.log('guildchat content is not found');
-            guildChatContent.bind('DOMNodeInserted', function(e) {
-              var node = $(e.target);
-              var nc = node.contents();
-              var text = nc[0].data;
-              var _time = $(nc[1]).children().last().attr('title');
-              console.log('text time')
-              console.log(_time)
-              var time = moment(_time, chatTimeFormats).unix();
-              console.log(time)
-              console.log('__CHAT__' + text + ';' + time);
-            });
-          });
+
+
 
 
           console.log('evaluating')

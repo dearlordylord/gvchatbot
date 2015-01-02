@@ -30,18 +30,14 @@ var io = require('socket.io').listen(server);
 
 var messages = [];
 
-var messagesCache = {};
-
 bot.on('chat', function(msg) {
 
   var lastMsg = messages[0];
   console.warn('chat event!')
   console.warn(msg.timestamp)
-  if (messagesCache[msg.timestamp + msg.msg]) return;
-  //if (lastMsg && lastMsg.timestamp > msg.timestamp) return;
-  //if (lastMsg && lastMsg.timestamp === msg.timestamp && lastMsg.msg === msg.msg) return;
+  if (lastMsg && lastMsg.timestamp > msg.timestamp) return;
+  if (lastMsg && lastMsg.timestamp === msg.timestamp && lastMsg.text === msg.text) return;
   messages.unshift(msg);
-  messagesCache[msg.timestamp + msg.msg] = true;
   emitter.emit('chat', msg);
 
 });
