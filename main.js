@@ -75,7 +75,7 @@ MongoClient.connect(mongoUrl, function(err, db) {
         gmessages.find().sort({timestamp: 1}).each(function(err, m) {
           if (err) return console.error(err);
           if (!m) {
-            console.warn('what the fuck 2')
+            console.warn('what the fuck 2 ' + m)
           }
           callback(m);
         });

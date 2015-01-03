@@ -113,11 +113,11 @@ function initAccount(account) {
         page.set('onUrlChanged', function(url) {
           log('url changed: ' + url);
           if (url == (account.godvilleUrl + '/news')) { // sometimes redirecting with (possibly) reason that news is changed, but not everytime!
-            page.onLoadFinished = function() {
+            page.set('onLoadFinished', function() {
               page.evaluate(function(account) {
                 document.location = account.godvilleUrl + '/superhero';
               }, function(err) {console.error(err);}, account);
-            };
+            });
           } else {
             page.set('onLoadFinished', function() {
               log('superhero page load finished');
