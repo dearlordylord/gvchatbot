@@ -32,7 +32,8 @@ var acc = function() {
     return {
       login: env['LOGIN'],
       password: env['PASSWORD'],
-      good: env['GOOD']
+      good: env['GOOD'],
+      break: env['BREAK']
     }
   }
 }();
@@ -160,21 +161,23 @@ function initAccount(account) {
 
 
 
+      if (account.break) {
+        // Sintoi break module
+        var lastBreak = moment.unix(0);
 
-      // Sintoi break module
-      var lastBreak = moment.unix(0);
+        emitter.on('chat', function(msg) {
+          var time = moment.unix(msg.timestamp);
+          var isSong = msg.text.split('\n').length > 2;
+          if (isSong && time.diff(lastBreak, 'minutes') > 1) {
+            lastBreak = time;
+            page.evaluate(function() {
+              $('.frbutton_pressed .frInputArea textarea').val('брейк');
+              $('.frbutton_pressed .frInputArea textarea').trigger($.Event("keypress", { which: 13}));
+            });
+          }
+        });
+      }
 
-      emitter.on('chat', function(msg) {
-        var time = moment.unix(msg.timestamp);
-        var isSong = msg.text.split('\n').length > 2;
-        if (isSong && time.diff(lastBreak, 'minutes') > 1) {
-          lastBreak = time;
-          page.evaluate(function() {
-            $('.frbutton_pressed .frInputArea textarea').val('брейк');
-            $('.frbutton_pressed .frInputArea textarea').trigger($.Event("keypress", { which: 13}));
-          });
-        }
-      });
 
 
 
