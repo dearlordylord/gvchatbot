@@ -1,5 +1,7 @@
 var bot = require('./botville.js');
 
+if (!process.env['WEB']) return;
+
 var express = require('express');
 var _ = require('underscore');
 
