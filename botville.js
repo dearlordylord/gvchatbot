@@ -480,6 +480,12 @@ function initAccount(account) {
               voice(yell(cancelQuestWords));
             };
 
+            var goodGuildYell = function() {
+              // doesn't have a meaning if level < 12
+              if (!level || level < 12) return;
+              voice('Вступи в гильдию "Уашактун"');
+            };
+
             var questYell = function() {
               voice(yell(questWords));
             };
@@ -521,7 +527,19 @@ function initAccount(account) {
 
             var isMeltable = !isTrade && !isFight && gold >= 3000;
 
-            var shitQuest = $('.q_name').text().match(/стать \d.*членом гильдии/) && !$('.q_name').text().match(/\(отменено\)/);
+            var shitQuest = $('.q_name').text().match(/стать \d.*членом гильдии/)
+              && !$('.q_name').text().match(/\(отменено\)/)
+              && !$('.q_name').text().match(/\(Уашактун\)/);
+
+            var goodQuest = $('.q_name').text().match(/стать \d.*членом гильдии/)
+              && !$('.q_name').text().match(/\(отменено\)/)
+              && $('.q_name').text().match(/\(Уашактун\)/);
+
+            var shitGuild = $('#hk_clan a').text() !== 'Уашактун';
+
+            var level;
+            var levelText = $('#hk_level .l_val').text();
+            if (levelText) level = Number(levelText);
 
             var resurrectLink = $('#cntrl1').children().last();
 
@@ -568,8 +586,10 @@ function initAccount(account) {
                   } else {
                     recharge();
                   }
-                } else if (shitQuest && prana >= 5 && !isFight &&  (lastYell + SECONDS_BETWEEN_YELLS < now)) {
+                } else if (shitQuest && prana >= 5 && !isFight && (lastYell + SECONDS_BETWEEN_YELLS < now)) {
                   cancelQuestYell();
+                } else if (shitGuild && !goodQuest && parana >= 5 && !isFight && (lastYell + SECONDS_BETWEEN_YELLS < now)) {
+                  goodGuildYell();
                 } else if (prana >= 80 && !isFight && !isInTown && hp >= 50 &&  // hp is percent
                   (lastYell + SECONDS_BETWEEN_YELLS < now) && !foundBoss && charges >= 2) {
                   digYell();
