@@ -113,7 +113,7 @@ function initAccount(account) {
 
         page.set('onUrlChanged', function(url) {
           log('url changed: ' + url);
-          if (url == (account.godvilleUrl + '/news')) { // sometimes redirecting with (possibly) reason that news is changed, but not everytime!
+          if (url.indexOf('/news') !== -1) { // sometimes redirecting with (possibly) reason that news is changed, but not everytime!
             page.set('onLoadFinished', function() {
               page.evaluate(function(account) {
                 document.location = account.godvilleUrl + '/superhero';
