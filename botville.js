@@ -166,14 +166,50 @@ function initAccount(account) {
         var lastBreak = moment.unix(0);
 
         emitter.on('chat', function(msg) {
+          console.warn(msg)
           var time = moment.unix(msg.timestamp);
           var isSong = msg.text.split('\n').length > 2;
           if (isSong && time.diff(lastBreak, 'minutes') > 1) {
             lastBreak = time;
-            page.evaluate(function() {
-              //$('.frbutton_pressed .frInputArea textarea').val('брейк');
-              //$('.frbutton_pressed .frInputArea textarea').trigger($.Event("keypress", { which: 13}));
-            });
+            page.evaluate(function(msg) {
+              //text: text,
+              //  timestamp: timestamp,
+              //  user: user,
+              //  id: id
+              var phrases = [ // sum(probs) == 1
+                {
+                  prob: 0.1,
+                  what: 'ссу на себя'
+                },
+                {
+                  prob: 0.5,
+                  what: 'ссу на @' + msg.user
+                },
+                {
+                  prob: 0.2,
+                  what: 'пссс' + Array(Math.floor(Math.random() * 10)).join('с')
+                },
+                {
+                  prob: 0.1,
+                  what: 'ссу на всех'
+                },
+                {
+                  prob: 0.1,
+                  what: 'ССУ НА АЛЛАХА'
+                }
+              ];
+              var seed = Math.random();
+              var acc = 0;
+
+              var phrase;
+              while (acc < seed) {
+                phrase = phrases.shift();
+                acc += p.prob;
+              }
+              var whatToSay = (phrase && phrase.what) ? phrase.what : 'брейк';
+              $('.frbutton_pressed .frInputArea textarea').val(whatToSay);
+              $('.frbutton_pressed .frInputArea textarea').trigger($.Event("keypress", { which: 13}));
+            }, function() {}, msg);
           }
         });
       }
