@@ -1,22 +1,9 @@
 <html>
 <head>
-    <style>
-        body {
-            font-family: "Helvetica Neue", helvetica, arial;
-            padding: 15px;
-        }
-        ul {
-            list-style: none;
-            margin: 0;
-            padding: 0;
-        }
-        ul li {
-            line-height: 1.4;
-        }
-    </style>
-
+    <link rel="stylesheet" type="text/css" href="/index.css">
     <script src="/socket.io/socket.io.js"></script>
     <script src="/index.js"></script>
+
 
     <script>
 
@@ -26,8 +13,8 @@
 <h1>мам гилдчят )</h1>
 <form id="pageForm" onsubmit="paging(this); return false;">
     page: <br/>
-    <input type="text" name="page"/>
-    <input type="submit" value="шатать" />
+    <input type="text" name="page" class="input-page"/>
+    <input type="submit" value="шатать" class="input-submit"/>
 </form>
 
 <ul id='messages'></ul>
