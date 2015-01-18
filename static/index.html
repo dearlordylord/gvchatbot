@@ -16,34 +16,20 @@
     </style>
 
     <script src="/socket.io/socket.io.js"></script>
+    <script src="/index.js"></script>
 
     <script>
-        var socket = io.connect(window.location.hostname);
 
-        var escapeHTML = (function () {
-            'use strict';
-            var chr = { '"': '&quot;', '&': '&amp;', '<': '&lt;', '>': '&gt;' };
-            return function (text) {
-                return text.replace(/[\"&<>]/g, function (a) { return chr[a]; });
-            };
-        }());
-
-        var linkify = function(text) {
-            var urlRegex =/(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
-            return text.replace(urlRegex, function(url) {
-                return '<a href="' + url + '">' + url + '</a>';
-            })
-        };
-
-        socket.on('chat', function(msg) {
-            var li = document.createElement('li');
-            li.innerHTML = linkify(escapeHTML('[' + msg.timestamp + ']' + msg.user +  ': ' + msg.text));
-            document.querySelector('#messages').appendChild(li);
-        });
     </script>
 </head>
-<body>
+<body onload="init()">
 <h1>мам гилдчят )</h1>
+<form id="pageForm" onsubmit="paging(this); return false;">
+    page: <br/>
+    <input type="text" name="page"/>
+    <input type="submit" value="шатать" />
+</form>
+
 <ul id='messages'></ul>
 </body>
 </html>

@@ -74,13 +74,23 @@ MongoClient.connect(mongoUrl, function(err, db) {
           if (m) socket.emit('chat', m);
         };
 
-        gmessages.find().sort({timestamp: 1}).each(function(err, m) {
-          if (err) return console.error(err);
-          if (!m) {
-            console.warn('what the fuck 2 ' + m)
-          }
-          callback(m);
-        });
+        var page = function(n) {
+          var PAGE = 200;
+          if (!n) n = 0;
+          gmessages.find().sort({timestamp: -1}).skip(PAGE * n).limit(PAGE).toArray(function(err, ms) {
+            if (err) return console.error(err);
+            ms = ms.filter(function(m) {
+              if (!m) {
+                console.warn('what the fuck 2 ' + m);
+                return false;
+              } else return true;
+            });
+            ms.reverse();
+            callback(ms);
+          });
+        };
+
+        socket.on('page', page);
 
         emitter.on('chat', callback);
 

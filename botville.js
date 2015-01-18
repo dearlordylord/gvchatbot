@@ -171,8 +171,8 @@ function initAccount(account) {
           if (isSong && time.diff(lastBreak, 'minutes') > 1) {
             lastBreak = time;
             page.evaluate(function() {
-              $('.frbutton_pressed .frInputArea textarea').val('брейк');
-              $('.frbutton_pressed .frInputArea textarea').trigger($.Event("keypress", { which: 13}));
+              //$('.frbutton_pressed .frInputArea textarea').val('брейк');
+              //$('.frbutton_pressed .frInputArea textarea').trigger($.Event("keypress", { which: 13}));
             });
           }
         });
