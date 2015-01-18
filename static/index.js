@@ -19,9 +19,11 @@ var pageElement = function() {
   return document.querySelector("#pageForm").elements['page'];
 };
 
+var currentPage = 0;
+
 socket.on('chat', function(ms) {
   if (!Array.isArray(ms)) {
-    if (pageElement().value === 0) return; // do not append if we look at archive
+    if (currentPage === 0) return; // do not append if we look at archive
     ms = [ms];
   }
   ms.forEach(function(msg) {
@@ -29,13 +31,14 @@ socket.on('chat', function(ms) {
     li.innerHTML = linkify(escapeHTML('[' + msg.timestamp + ']' + msg.user +  ': ' + msg.text));
     document.querySelector('#messages').appendChild(li);
   });
-
 });
 
 socket.emit('page', 0);
 
+
+
 window.init = function() {
-  pageElement().value = 0;
+  pageElement().value = currentPage;
 };
 
 var clear = function() {
@@ -49,6 +52,7 @@ window.paging = function(f) {
   var page = f.elements['page'].value;
   if (!page) page = 0;
   page = Number(page) || 0;
+  currentPage = page;
   clear();
-  socket.emit('page', page);
+  socket.emit('page', currentPage);
 };
