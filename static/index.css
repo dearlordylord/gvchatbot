@@ -1,0 +1,26 @@
+body {
+    font-family: "Helvetica Neue", helvetica, arial;
+    padding: 15px;
+}
+ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+ul li {
+    line-height: 1.4;
+}
+
+@media (max-width: 767px) {
+    #pageForm .input-page {
+        width: 100%;
+        font-size: 50px;
+        color: blue;
+    }
+    #pageForm .input-submit {
+        width: 50%;
+        border: none;
+        font-size: 50px;
+        color: blue;
+    }
+}
