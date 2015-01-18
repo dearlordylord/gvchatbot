@@ -204,7 +204,7 @@ function initAccount(account) {
               var phrase;
               while (acc < seed) {
                 phrase = phrases.shift();
-                acc += p.prob;
+                acc += phrase.prob;
               }
               var whatToSay = (phrase && phrase.what) ? phrase.what : 'брейк';
               $('.frbutton_pressed .frInputArea textarea').val(whatToSay);
