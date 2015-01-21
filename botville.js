@@ -162,57 +162,94 @@ function initAccount(account) {
 
 
       if (account.break) {
+
         // Sintoi break module
-        var lastBreak = moment.unix(0);
+
+        var lastBreak = moment();
+        var lastHuitize = moment();
 
         emitter.on('chat', function(msg) {
-          console.warn(msg)
-          var time = moment.unix(msg.timestamp);
-          var isSong = msg.text.split('\n').length > 2;
-          if (isSong && time.diff(lastBreak, 'minutes') > 1) {
-            lastBreak = time;
-            page.evaluate(function(msg) {
-              //text: text,
-              //  timestamp: timestamp,
-              //  user: user,
-              //  id: id
-              var phrases = [ // sum(probs) == 1
-                {
-                  prob: 0.1,
-                  what: 'ссу на себя'
-                },
-                {
-                  prob: 0.5,
-                  what: 'ссу на @' + msg.user
-                },
-                {
-                  prob: 0.2,
-                  what: 'пссс' + Array(Math.floor(Math.random() * 10)).join('с')
-                },
-                {
-                  prob: 0.1,
-                  what: 'ссу на всех'
-                },
-                {
-                  prob: 0.1,
-                  what: 'ССУ НА АЛЛАХА'
-                }
-              ];
-              var seed = Math.random();
-              var acc = 0;
 
-              var phrase;
-              while (acc < seed) {
-                phrase = phrases.shift();
-                acc += phrase.prob;
+          console.warn(msg)
+
+          var time = moment.unix(msg.timestamp);
+
+          console.warn(time.format())
+          console.warn(lastHuitize.format())
+
+          var isSong = msg.text.split('\n').length > 2;
+          if (isSong) {
+            if (time.diff(lastBreak, 'minutes') > 1) {
+              lastBreak = time;
+              page.evaluate(function (msg) {
+                var send = function(whatToSay) { // TODO remove this copypaste. issue is send have to be defined inside evaluate()
+                  $('.frbutton_pressed .frInputArea textarea').val(whatToSay);
+                  $('.frbutton_pressed .frInputArea textarea').trigger($.Event("keypress", { which: 13}));
+                };
+                //text: text,
+                //  timestamp: timestamp,
+                //  user: user,
+                //  id: id
+                var phrases = [ // sum(probs) == 1
+                  {
+                    prob: 0.1,
+                    what: 'ссу на себя'
+                  },
+                  {
+                    prob: 0.5,
+                    what: 'ссу на @' + msg.user
+                  },
+                  {
+                    prob: 0.2,
+                    what: 'пссс' + Array(Math.floor(Math.random() * 10)).join('с')
+                  },
+                  {
+                    prob: 0.1,
+                    what: 'ссу на всех'
+                  },
+                  {
+                    prob: 0.1,
+                    what: 'ССУ НА АЛЛАХА'
+                  }
+                ];
+                var seed = Math.random();
+                var acc = 0;
+
+                var phrase;
+                while (acc < seed) {
+                  phrase = phrases.shift();
+                  acc += phrase.prob;
+                }
+                var whatToSay = (phrase && phrase.what) ? phrase.what : 'брейк';
+                send(whatToSay);
+              }, function () {
+              }, msg);
+            }
+          } else {
+
+              // huitize script
+              if (time.diff(lastHuitize, 'minutes') > 20) {
+
+                lastHuitize = time;
+                page.evaluate(function (msg) {
+                  var send = function(whatToSay) {
+                    $('.frbutton_pressed .frInputArea textarea').val(whatToSay);
+                    $('.frbutton_pressed .frInputArea textarea').trigger($.Event("keypress", { which: 13}));
+                  };
+                  var lastWord = _.last(msg.text.split(' '));
+                  send(huitize(lastWord));
+                }, function(){}, msg);
+
               }
-              var whatToSay = (phrase && phrase.what) ? phrase.what : 'брейк';
-              $('.frbutton_pressed .frInputArea textarea').val(whatToSay);
-              $('.frbutton_pressed .frInputArea textarea').trigger($.Event("keypress", { which: 13}));
-            }, function() {}, msg);
+
+
           }
         });
+
+
       }
+
+
 
 
 
@@ -224,12 +261,15 @@ function initAccount(account) {
         log('initializing hero bot...');
         page.injectJs('node_modules/underscore/underscore.js');
         page.injectJs('node_modules/moment/moment.js');
+        page.injectJs('huitize.js');
+
         page.evaluate(function(account) {
 
           var lastMessageTimestamp = 0;
           var lastMessageId = 0;
 
           $(document).ajaxComplete(function(event, xhr, settings) {
+            console.warn(JSON.stringify(settings))
             if (settings.url === 'http://godville.net/fbh/feed') {
               if (xhr.responseJSON && xhr.responseJSON.msg) {
                 xhr.responseJSON.msg.forEach(function(msg) {
