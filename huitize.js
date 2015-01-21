@@ -16,7 +16,7 @@ var huitize = function(str)
   if (str.length !== 0)
   {
     str = transliterate(transliterate(str), true);
-    var ch = str[0]; var i = 0;
+    var ch = str[0].toLowerCase(); var i = 0;
     while (vowels.indexOf(ch) == -1 && i < str.length)
     {
       ch = str[i];
