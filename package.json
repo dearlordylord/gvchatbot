@@ -1,0 +1,26 @@
+{
+  "name": "gvchatbot",
+  "version": "0.0.0",
+  "description": "GV bot for botting",
+  "main": "bot.js",
+  "dependencies": {
+    "events": "~1.0.2",
+    "express": "~4.10.6",
+    "imgur": "^0.1.5",
+    "moment": "~2.5.0",
+    "mongodb": "~1.4.26",
+    "phantom": "~0.7.1",
+    "q": "^1.2.0",
+    "request-promise": "^0.4.2",
+    "serve-static": "~1.7.1",
+    "socket.io": "~1.2.1",
+    "underscore": "~1.5.2",
+    "xml2js": "^0.4.8"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Firfi",
+  "license": "BSD-2-Clause"
+}

@@ -1,0 +1,28 @@
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="/index.css">
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/index.js"></script>
+</head>
+<body onload="init()">
+<!--<body>-->
+<!--<span class="white">Бог заблокирован. Основание: нарушение Правил хорошего тона Годвилля, п.2.8 Дата разблокировки: 08.07.2015 23:58</span>-->
+<!--<span class="black">Обоссал</span>-->
+<!--<span class="black">platypus.wombatee@gmail.com</span>-->
+
+<h1>мам гилдчят )</h1>
+<form id="pageForm" onsubmit="paging(this); return false;">
+    page: <br/>
+    <input type="text" name="page" class="input-page"/>
+    <input type="submit" value="шатать" class="input-submit"/>
+</form>
+
+<ul id='messages'></ul>
+
+<form id="createMessage" onsubmit="createMessage(this); return false;">
+    Добавить сообщение в етот чят
+    <input type="text" name="message" class="input-message"/>
+</form>
+
+</body>
+</html>

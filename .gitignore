@@ -1,0 +1,11 @@
+node_modules
+logs
+*.png
+cookies*.txt
+config.json
+
+deploy.sh
+one.sh
+mailovi
+mailovi2
+*.png
